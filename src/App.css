@@ -1,0 +1,121 @@
+body,
+html,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* ... */
+
+.main-content {
+  flex: 1;
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+}
+
+.resizer {
+  width: 5px;
+  background-color: #3d3d3d;
+  cursor: col-resize;
+  transition: background-color 0.2s;
+  z-index: 10;
+}
+
+.resizer:hover {
+  background-color: #007acc;
+}
+
+.pane {
+  flex: unset;
+  /* We control width via inline style */
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar {
+  height: 50px;
+  background-color: #2d2d2d;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  border-bottom: 1px solid #3d3d3d;
+  gap: 15px;
+  /* Increased gap for better spacing */
+}
+
+.toolbar button {
+  background-color: #3d3d3d;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Space between icon and text */
+}
+
+.toolbar button:hover {
+  background-color: #4d4d4d;
+}
+
+.status-bar {
+  height: 25px;
+  background-color: #007acc;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 12px;
+  justify-content: space-between;
+}
+
+.status-message {
+  margin-left: auto;
+}
+
+.editor-pane {
+  border-right: 1px solid #3d3d3d;
+}
+
+.preview-pane {
+  background-color: white;
+  /* Mermaid default theme is light usually, or we can adjust */
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4d4d4d;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5d5d5d;
+}
