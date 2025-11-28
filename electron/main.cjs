@@ -2,6 +2,8 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
+app.name = 'DAC Viewer';
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
@@ -41,7 +43,11 @@ app.on('window-all-closed', () => {
 ipcMain.handle('read-file', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog({
     properties: ['openFile'],
-    filters: [{ name: 'Mermaid Files', extensions: ['mmd', 'txt'] }],
+    filters: [
+      { name: 'All Supported Files', extensions: ['mmd', 'txt', 'puml', 'plantuml'] },
+      { name: 'Mermaid Files', extensions: ['mmd', 'txt'] },
+      { name: 'PlantUML Files', extensions: ['puml', 'plantuml'] }
+    ],
   });
   if (canceled) {
     return null;
@@ -57,7 +63,10 @@ ipcMain.handle('save-file', async (event, { path: filePath, content }) => {
     return { path: filePath };
   } else {
     const { canceled, filePath: savePath } = await dialog.showSaveDialog({
-      filters: [{ name: 'Mermaid Files', extensions: ['mmd'] }],
+      filters: [
+        { name: 'Mermaid Files', extensions: ['mmd'] },
+        { name: 'PlantUML Files', extensions: ['puml'] }
+      ],
     });
     if (canceled) {
       return null;
