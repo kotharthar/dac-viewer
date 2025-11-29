@@ -1,16 +1,62 @@
-# React + Vite
+# DAC Viewer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**DAC Viewer** (Diagram-as-Code Viewer) is a powerful desktop application for creating, viewing, and exporting diagrams. It supports both **Mermaid** (offline) and **PlantUML** (via Kroki) diagrams with a live preview, syntax highlighting, and easy export options.
 
-Currently, two official plugins are available:
+> **Built by Gemini 3 Pro using Antigravity IDE**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## React Compiler
+*   **Dual Diagram Support**: Seamlessly switch between **Mermaid** and **PlantUML**.
+*   **Live Preview**: See your changes instantly as you type.
+*   **Kroki Integration**: Reliable PlantUML rendering powered by [Kroki](https://kroki.io).
+*   **Export to PNG**: High-quality export of your current diagram view.
+*   **Smart Editor**:
+    *   Syntax highlighting for Mermaid and PlantUML (Java-like).
+    *   Dark mode for comfortable editing.
+    *   Code view toggle for distraction-free viewing.
+*   **Interactive Preview**: Pan and zoom support for large diagrams.
+*   **File Operations**: Open and Save `.mmd`, `.txt`, `.puml`, and `.plantuml` files.
+*   **Cross-Platform**: Available for macOS (Intel & Apple Silicon) and Windows.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ⌨️ Keyboard Shortcuts
 
-## Expanding the ESLint configuration
+| Action | Shortcut |
+| :--- | :--- |
+| **Open File** | `Cmd/Ctrl + O` |
+| **Save File** | `Cmd/Ctrl + S` |
+| **Export PNG** | `Cmd/Ctrl + E` |
+| **Toggle Code** | `Cmd/Ctrl + B` |
+| **Refresh** | `Cmd/Ctrl + R` |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🛠️ Development
+
+### Prerequisites
+- Node.js (v16 or higher)
+- npm
+
+### Setup
+```bash
+# Install dependencies
+npm install
+```
+
+### Run Locally
+```bash
+# Run both Vite (renderer) and Electron (main)
+npm run dev
+```
+
+### Build
+```bash
+# Build for macOS and Windows
+npm run build
+```
+
+## 🏗️ Tech Stack
+
+- **Electron**: Desktop application framework.
+- **React**: UI library.
+- **Vite**: Fast build tool.
+- **CodeMirror 6**: Code editor component.
+- **Mermaid.js**: Local Mermaid rendering.
+- **Pako**: Deflate compression for Kroki API.
