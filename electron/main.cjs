@@ -77,6 +77,21 @@ ipcMain.handle('save-file', async (event, { path: filePath, content }) => {
   }
 });
 
+ipcMain.handle('save-file-as', async (event, { content }) => {
+  const { canceled, filePath: savePath } = await dialog.showSaveDialog({
+    filters: [
+      { name: 'Mermaid Files', extensions: ['mmd'] },
+      { name: 'PlantUML Files', extensions: ['puml'] }
+    ],
+  });
+  if (canceled) {
+    return null;
+  } else {
+    fs.writeFileSync(savePath, content);
+    return { path: savePath };
+  }
+});
+
 ipcMain.handle('capture-page', async (event, { x, y, width, height }) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   const rect = {

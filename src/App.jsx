@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Editor from './components/Editor';
 import Preview from './components/Preview';
-import { FaFolderOpen, FaSave, FaFileImage, FaCode, FaEyeSlash, FaSync } from 'react-icons/fa';
+import TabBar from './components/TabBar';
+import { FaFolderOpen, FaSave, FaFileImage, FaCode, FaEyeSlash, FaSync, FaPlus, FaSave as FaSaveAs } from 'react-icons/fa';
 import './App.css';
 
 const DEFAULT_CODE = `graph TD
@@ -10,14 +11,27 @@ const DEFAULT_CODE = `graph TD
   B -- No --> D[Debug]`;
 
 function App() {
-  const [code, setCode] = useState(DEFAULT_CODE);
-  const [filePath, setFilePath] = useState(null);
-  const [fileType, setFileType] = useState('mermaid'); // 'mermaid' or 'plantuml'
+  const [tabs, setTabs] = useState([{
+    id: Date.now(),
+    code: DEFAULT_CODE,
+    filePath: null,
+    fileType: 'mermaid',
+    isDirty: false
+  }]);
+  const [activeTabId, setActiveTabId] = useState(tabs[0].id);
   const [isEditorVisible, setIsEditorVisible] = useState(true);
   const [editorWidth, setEditorWidth] = useState(50); // Percentage
   const [status, setStatus] = useState('Ready');
   const [isDragging, setIsDragging] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const getActiveTab = () => tabs.find(tab => tab.id === activeTabId);
+
+  const updateActiveTab = (updates) => {
+    setTabs(prevTabs => prevTabs.map(tab =>
+      tab.id === activeTabId ? { ...tab, ...updates } : tab
+    ));
+  };
 
   const detectType = (content) => {
     if (content.includes('@startuml') || content.includes('@enduml')) {
@@ -27,19 +41,54 @@ function App() {
   };
 
   const handleCodeChange = (value) => {
-    setCode(value);
     const type = detectType(value);
-    if (type !== fileType) {
-      setFileType(type);
+    updateActiveTab({
+      code: value,
+      fileType: type,
+      isDirty: true
+    });
+  };
+
+  const handleNewTab = () => {
+    const newTab = {
+      id: Date.now(),
+      code: DEFAULT_CODE,
+      filePath: null,
+      fileType: 'mermaid',
+      isDirty: false
+    };
+    setTabs(prev => [...prev, newTab]);
+    setActiveTabId(newTab.id);
+    setStatus('Created new tab');
+  };
+
+  const handleCloseTab = (tabId) => {
+    if (tabs.length === 1) {
+      setStatus('Cannot close the last tab');
+      return;
     }
+
+    const tabIndex = tabs.findIndex(tab => tab.id === tabId);
+    const newTabs = tabs.filter(tab => tab.id !== tabId);
+    setTabs(newTabs);
+
+    // Switch to adjacent tab if closing active tab
+    if (tabId === activeTabId) {
+      const newActiveIndex = Math.min(tabIndex, newTabs.length - 1);
+      setActiveTabId(newTabs[newActiveIndex].id);
+    }
+
+    setStatus('Closed tab');
+  };
+
+  const handleTabSwitch = (tabId) => {
+    setActiveTabId(tabId);
   };
 
   const handleOpen = async () => {
     if (window.electronAPI) {
       const result = await window.electronAPI.readFile();
       if (result) {
-        setCode(result.content);
-        setFilePath(result.path);
         // Prioritize extension, fallback to content detection
         let type = 'mermaid';
         if (result.path.endsWith('.puml') || result.path.endsWith('.plantuml')) {
@@ -49,7 +98,17 @@ function App() {
         } else {
           type = detectType(result.content);
         }
-        setFileType(type);
+
+        // Create new tab for opened file
+        const newTab = {
+          id: Date.now(),
+          code: result.content,
+          filePath: result.path,
+          fileType: type,
+          isDirty: false
+        };
+        setTabs(prev => [...prev, newTab]);
+        setActiveTabId(newTab.id);
         setStatus(`Opened ${result.path} (${type})`);
       }
     }
@@ -57,18 +116,50 @@ function App() {
 
   const handleSave = async () => {
     if (window.electronAPI) {
-      const result = await window.electronAPI.saveFile({ path: filePath, content: code });
+      const activeTab = getActiveTab();
+      const result = await window.electronAPI.saveFile({
+        path: activeTab.filePath,
+        content: activeTab.code
+      });
       if (result) {
-        setFilePath(result.path);
         let type = 'mermaid';
         if (result.path.endsWith('.puml') || result.path.endsWith('.plantuml')) {
           type = 'plantuml';
         } else if (result.path.endsWith('.mmd')) {
           type = 'mermaid';
         } else {
-          type = detectType(code);
+          type = detectType(activeTab.code);
         }
-        setFileType(type);
+        updateActiveTab({
+          filePath: result.path,
+          fileType: type,
+          isDirty: false
+        });
+        setStatus(`Saved to ${result.path}`);
+      }
+    }
+  };
+
+  const handleSaveAs = async () => {
+    if (window.electronAPI) {
+      const activeTab = getActiveTab();
+      const result = await window.electronAPI.saveFileAs({
+        content: activeTab.code
+      });
+      if (result) {
+        let type = 'mermaid';
+        if (result.path.endsWith('.puml') || result.path.endsWith('.plantuml')) {
+          type = 'plantuml';
+        } else if (result.path.endsWith('.mmd')) {
+          type = 'mermaid';
+        } else {
+          type = detectType(activeTab.code);
+        }
+        updateActiveTab({
+          filePath: result.path,
+          fileType: type,
+          isDirty: false
+        });
         setStatus(`Saved to ${result.path}`);
       }
     }
@@ -122,11 +213,18 @@ function App() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+        e.preventDefault();
+        handleNewTab();
+      }
       if ((e.metaKey || e.ctrlKey) && e.key === 'o') {
         e.preventDefault();
         handleOpen();
       }
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 's') {
+        e.preventDefault();
+        handleSaveAs();
+      } else if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
         handleSave();
       }
@@ -142,11 +240,23 @@ function App() {
         e.preventDefault();
         handleRefresh();
       }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'w') {
+        e.preventDefault();
+        handleCloseTab(activeTabId);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Tab') {
+        e.preventDefault();
+        const currentIndex = tabs.findIndex(tab => tab.id === activeTabId);
+        const nextIndex = e.shiftKey
+          ? (currentIndex - 1 + tabs.length) % tabs.length
+          : (currentIndex + 1) % tabs.length;
+        setActiveTabId(tabs[nextIndex].id);
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [code, filePath, fileType, isEditorVisible]); // Dependencies for handlers
+  }, [tabs, activeTabId, isEditorVisible]); // Dependencies for handlers
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -172,14 +282,22 @@ function App() {
     };
   }, [isDragging]);
 
+  const activeTab = getActiveTab();
+
   return (
     <div className="app-container">
       <div className="toolbar">
+        <button onClick={handleNewTab} title="New File (Cmd/Ctrl + N)">
+          <FaPlus /> <span>New</span>
+        </button>
         <button onClick={handleOpen} title="Open File (Cmd/Ctrl + O)">
           <FaFolderOpen /> <span>Open</span>
         </button>
         <button onClick={handleSave} title="Save File (Cmd/Ctrl + S)">
           <FaSave /> <span>Save</span>
+        </button>
+        <button onClick={handleSaveAs} title="Save As (Cmd/Ctrl + Shift + S)">
+          <FaSaveAs /> <span>Save As</span>
         </button>
         <button onClick={handleExport} title="Export as PNG (Cmd/Ctrl + E)">
           <FaFileImage /> <span>Export PNG</span>
@@ -188,10 +306,16 @@ function App() {
           {isEditorVisible ? <><FaEyeSlash /> <span>Hide Code</span></> : <><FaCode /> <span>Show Code</span></>}
         </button>
       </div>
+      <TabBar
+        tabs={tabs}
+        activeTabId={activeTabId}
+        onTabSwitch={handleTabSwitch}
+        onTabClose={handleCloseTab}
+      />
       <div className="main-content">
         {isEditorVisible && (
           <div className="pane editor-pane" style={{ width: `${editorWidth}%` }}>
-            <Editor value={code} onChange={handleCodeChange} type={fileType} />
+            <Editor value={activeTab.code} onChange={handleCodeChange} type={activeTab.fileType} />
           </div>
         )}
         {isEditorVisible && (
@@ -206,11 +330,11 @@ function App() {
           >
             <FaSync />
           </button>
-          <Preview code={code} type={fileType} refreshTrigger={refreshTrigger} />
+          <Preview code={activeTab.code} type={activeTab.fileType} refreshTrigger={refreshTrigger} />
         </div>
       </div>
       <div className="status-bar">
-        <span>{filePath || 'Untitled'}</span>
+        <span>{activeTab.filePath || 'Untitled'}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span className="status-message">{status}</span>
           <FaSync onClick={handleRefresh} style={{ cursor: 'pointer' }} title="Refresh (Cmd/Ctrl + R)" />

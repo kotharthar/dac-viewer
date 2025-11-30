@@ -1,0 +1,85 @@
+.tab-bar {
+  display: flex;
+  background-color: #2d2d2d;
+  border-bottom: 1px solid #3d3d3d;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-height: 35px;
+  align-items: flex-end;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #2d2d2d;
+  color: #a0a0a0;
+  border-right: 1px solid #3d3d3d;
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 120px;
+  max-width: 200px;
+  transition: background-color 0.2s;
+  user-select: none;
+}
+
+.tab:hover {
+  background-color: #3d3d3d;
+}
+
+.tab.active {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  border-bottom: 2px solid #007acc;
+}
+
+.tab-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+
+.tab-dirty {
+  color: #007acc;
+  font-weight: bold;
+  margin-left: 2px;
+}
+
+.tab-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: #a0a0a0;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 3px;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.tab-close:hover {
+  background-color: #ff5555;
+  color: white;
+}
+
+/* Scrollbar for tab bar */
+.tab-bar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tab-bar::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
+
+.tab-bar::-webkit-scrollbar-thumb {
+  background: #4d4d4d;
+  border-radius: 2px;
+}
+
+.tab-bar::-webkit-scrollbar-thumb:hover {
+  background: #5d5d5d;
+}
