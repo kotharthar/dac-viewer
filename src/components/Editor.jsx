@@ -1,10 +1,11 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
+import { EditorView } from '@codemirror/view';
 import { mermaid } from 'codemirror-lang-mermaid';
 import { java } from '@codemirror/lang-java'; // Using Java as a close approximation for PlantUML syntax
 
 const Editor = ({ value, onChange, type }) => {
-  const extensions = type === 'plantuml' ? [java()] : [mermaid()];
+  const extensions = type === 'plantuml' ? [java(), EditorView.lineWrapping] : [mermaid(), EditorView.lineWrapping];
 
   return (
     <CodeMirror
